@@ -7,13 +7,13 @@
     ^{:doc "Return an initial empty tree (a node) configured for a maximum selection size ms"
       :added "1.0.0"}
    make-tree [ms]
-   (assoc {} :type 'node :max-group-size ms :items {} :children {} :radix nil)
+   (assoc {} :type 'node :max-group-size ms :value-set #{} :children {} :radix nil)
 )
 
 (def example-tree (make-tree 2))
 
 (declare add-value-to-node)
-(declare add-value-to-block)
+(declare add-value-to-leaf)
 
 (defn
     ^{:doc "Return a tree with the supplied value added"
@@ -22,7 +22,7 @@
    (let [type (t :type)]
       (if (= type 'node)
          (add-value-to-node t v)
-         (add-value-to-block t v)
+         (add-value-to-leaf t v)
       )
    )
 )
@@ -33,20 +33,25 @@
       :private true
       :added "1.0.0"}
    add-value-to-node [t v]
-      nil ; TODO 
+      nil ; TODO - everything 
 )
 
 
 (defn
-    ^{:doc "Add a value to an existing block, potentially converting the block into a node"
+    ^{:doc "Add a value to an existing block, potentially converting the block into a node if max size (ms) is reached"
       :private true
       :added "1.0.0"}
-   add-value-to-block [t v]
-      nil ; TODO
+   add-value-to-leaf [t v ms]
+      (let [size (count (t :value-set))]
+         (if (>= size ms)
+            nil ; TODO - make this leaf a block and populate the children
+            (assoc t :value-set (conj (t :value-set) v)) ; add the entry
+         )
+      )
 )
 
 
-(def example-value-add (add-value {:items {\a 1 \b 2 \c 4}} "apple"))
+(def example-value-add (add-value-to-leaf {:value-set #{\a 1 \b 2 \c 4} :type 'leaf} "apple" 10))
 
 
 (defn
@@ -56,7 +61,7 @@
    (let [type (t :type)]
       (if (= type 'node)
          nil ; TODO - descend
-         (t :items) ; Not a node - so must be a block.  Return the items.
+         (t :value-set) ; Not a node - so must be a block.  Return the items.
       )
    )
 )
