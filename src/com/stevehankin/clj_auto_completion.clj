@@ -7,7 +7,7 @@
     ^{:doc "Return an initial empty tree (a node) configured for a maximum selection size ms"
       :added "1.0.0"}
    make-tree [ms]
-   (assoc {} :type 'node :max-group-size ms :value-set #{} :children {} :radix nil)
+   (assoc {} :type 'node :max-group-size ms :value-set #{} :child-map {} :radix nil)
 )
 
 (def example-tree (make-tree 2))
@@ -29,12 +29,31 @@
 )
 
 
+(declare create-node)
+
 (defn
     ^{:doc "Add a value to the node, by retrieving (or creating) the required radix and descending"
       :private true
       :added "1.0.0"}
-   add-value-to-node [t v]
-      nil ; TODO - everything 
+   add-value-to-node [t [v & more]] ; v represents the current character and determines the radix
+   (let [cm (:child-map t)]
+      (if-let [cb (get cm v)]
+         nil ; TODO - update this block
+         (let [nb (create-node)]  ;  create a new block
+            nb ; TODO - associate in the value
+         )
+      )
+   ) 
+)
+
+(def example-add-value-to-node (add-value-to-node {:child-map {}} "Apple"))
+
+
+(defn
+    ^{:doc "Create an empty node. Similar to make-tree but does not contain the group size"
+      :private true
+      :added "1.0.0"}
+   create-node [] (assoc {} :type 'node :value-set #{} :child-map {} :radix nil)
 )
 
 
