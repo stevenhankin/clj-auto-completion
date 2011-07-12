@@ -18,11 +18,12 @@
 (defn
     ^{:doc "Return a tree with the supplied value added"
       :added "1.0.0"}
-   add-value [t [v & more]]
-   (let [type (t :type)]
+   add-value [t v]
+   (let [type (t :type)
+         ms   (t :max-group-size)]
       (if (= type 'node)
          (add-value-to-node t v)
-         (add-value-to-leaf t v)
+         (add-value-to-leaf t v ms)
       )
    )
 )
@@ -41,7 +42,7 @@
     ^{:doc "Add a value to an existing block, potentially converting the block into a node if max size (ms) is reached"
       :private true
       :added "1.0.0"}
-   add-value-to-leaf [t v ms]
+   add-value-to-leaf [t [v & more] ms]
       (let [size (count (t :value-set))]
          (if (>= size ms)
             nil ; TODO - make this leaf a block and populate the children
@@ -51,7 +52,7 @@
 )
 
 
-(def example-value-add (add-value-to-leaf {:value-set #{\a 1 \b 2 \c 4} :type 'leaf} "apple" 10))
+(def example-value-add (add-value {:value-set #{\a 1 \b 2 \c 4} :type 'leaf :max-group-size 10} "apple"))
 
 
 (defn
