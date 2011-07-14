@@ -17,36 +17,43 @@
 
 (def max 2)
 
+(defn map-merge 
+   [mapcol]
+   (let [firstm (first mapcol)
+         restm (rest mapcol)]
+      (if (> (count restm) 0)
+         (merge firstm (map-merge restm))
+         firstm
+      )
+   )
+)
+
 ; add to tree the full string represent by current partial
 (defn add-string
    ([t f]
-      (add-string t f f)
+      (add-string t f 1)
    )
-   ([t f part]
-      (let [p (first part)
-            rem (subs part 1)]
-      (if-let [v (t (str p))]
-         (let [size (count v)]
-            (if (< size max)
-               (assoc t (str p) (conj v f))
-               (let  [nt (dissoc t (str p))]
-                  ;(map #(add-string nt % (subs % 0 (inc (count p)))) v )
-                  (add-string nt
-                              (first v) 
-                              (cons (subs (first v) 0 (inc (count part))) 
-                                    (subs (first v) (inc (count part)) ))) 
+   ([t f ofs] ; tree, full value, offset
+      (let [p (subs f 0 ofs)
+            rem (subs f ofs)]
+      (if-let [v (t p)] ; is there a match for partial search str p?
+         (let [size (count v)] ; check size of the vector
+            (if (< size max) 
+               (assoc t p (conj v f)) ; size is ok so add
+               (let  [nt (dissoc t (str p)) ; tree with old vector removed
+                      newofs (inc ofs)]
+                  (map  #(add-string {} % newofs) (conj v f) )
                )
             )
          )
-         (assoc t p (vector f))
+         (assoc t p (vector f)) ; not exists, so add this first element
       )
       )
    )
 )
 
-(add-string {"ba" ["bandaid" "banana"] "moo" ["moon" "moonshine" "moomin"]} "banyan")
+(add-string {"b" ["bandaid" "banana"] "moo" ["moon" "moonshine" "moomin"]} "banyan")
 
 
-(cons (subs "banyan" 0 (inc (count "ban"))) (subs "banyan" (inc (count "ban")) ))
 
 
